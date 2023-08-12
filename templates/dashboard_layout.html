@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+    .claim-toggle {
+        display: inline-block;
+        cursor: pointer;
+    }
+
+    .claim-message {
+        max-width: 200px; /* Adjust as needed */
+        display: inline-block;
+        vertical-align: middle;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        transition: max-width 0.3s ease-in-out;
+    }
+
+    .claim-toggle.expanded .claim-message {
+        max-width: none;
+        white-space: normal; /* Allow text to wrap vertically */
+        display: block; /* Display the message as a block element */
+    }
+</style>
+</head>
+<body class="bg-gray-100">
+
+    <div class="container mx-auto py-10">
+
+        <div class="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="kpi-data">
+
+
+        </div>
+
+    </div>
+
+
+
+<script>
+$(document).ready(function() {
+    const dataFromServer = {{ data|safe }};
+    const did = dataFromServer['dashboard']?.['id'];
+
+    if (did !== undefined) {
+        const promises = [];
+
+        dataFromServer['kpis']?.forEach(obj => {
+            const promise = $.ajax({
+                url: `/get_kpi/?did=${did}&kid=${obj?.id}&kt=${obj?.kpi_type}`,
+                type: 'GET',
+                dataType: 'html'
+            });promise
+            promises.push(promise);
+        });
+
+        // Use jQuery's when() to wait for all promises to resolve
+        $.when(...promises)
+            .then(function(...responses) {
+                // Update the content with the received data
+                responses.forEach(response => {
+                    $('#kpi-data').append(response?.[0]);  // Append each response to the container
+                });
+            })
+            .fail(function() {
+                $('#kpi-data').html('An error occurred while fetching data.');
+            });
+    } else {
+        console.error("Dashboard ID is missing or undefined.");
+    }
+});
+</script>
+
+
+</body>
+</html>
