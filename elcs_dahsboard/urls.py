@@ -15,7 +15,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 
 from App import views
 
@@ -26,4 +26,7 @@ urlpatterns = [
     path('create_kpi', views.create_kpi, name='create_kpi'),
     path('get_kpi/', views.get_kpi, name='get_kpi'),
     path('admin/', admin.site.urls),
+
+    path("__reload__/", include("django_browser_reload.urls")),
+
 ]
