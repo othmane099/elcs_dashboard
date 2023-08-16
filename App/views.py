@@ -5,25 +5,26 @@ from django.forms import model_to_dict
 from django.shortcuts import render, redirect
 
 from App import constants
-from App.models import Dashboard, BaseKPITemplate, RegularKPI, DateTimeKPI, ChartKPI
+from App.models import Dashboard, BaseKPITemplate, RegularKPI, DateTimeKPI, ChartKPI, BaseKPI
 
 
 # Create your views here.
 def get_kpi(request):
-    dahboard_id = request.GET.get('did')
-    kpi_id = request.GET.get('kid')
-    kpi_type = request.GET.get('kt')
+    encoded_data = request.GET.get('ku')
+    decoded_data = BaseKPI.decode_uuid_with_kpi_type(encoded_data)
+    kpi_type = decoded_data['kpi_type']
+    uuid_string = decoded_data['uuid_string']
     kpi = {}
     kpi_val = {}
 
     if kpi_type == constants.REGULAR_KPI_TYPE:
-        kpi = RegularKPI.objects.get(dashboard=dahboard_id, id=kpi_id)
+        kpi = RegularKPI.objects.get(uuid=uuid_string)
         kpi_val = model_to_dict(kpi)
     elif kpi_type == constants.DATETIME_KPI_TYPE:
-        kpi = DateTimeKPI.objects.get(dashboard=dahboard_id, id=kpi_id)
+        kpi = DateTimeKPI.objects.get(uuid=uuid_string)
         kpi_val = model_to_dict(kpi)
     elif kpi_type == constants.CHART_KPI_TYPE:
-        kpi = ChartKPI.objects.get(dashboard=dahboard_id, id=kpi_id)
+        kpi = ChartKPI.objects.get(uuid=uuid_string)
         kpi_val = model_to_dict(kpi)
 
     return render(request, f"{kpi.render_template().file}", {'data': kpi_val})
@@ -32,19 +33,29 @@ def get_kpi(request):
 
 
 def dashboard(request, dashboard_id):
-    my_dashboard = Dashboard.objects.get(id=dashboard_id)
-    # Retrieve KPI instances from each KPI table
-    data = {
-        'dashboard': model_to_dict(my_dashboard),
-        'kpis':
-            list(RegularKPI.objects.filter(dashboard=my_dashboard).values()) +
-            list(DateTimeKPI.objects.filter(dashboard=my_dashboard).values()) +
-            list(ChartKPI.objects.filter(dashboard=my_dashboard).values())
-    }
+    regular_kpis = RegularKPI.objects.filter(dashboard_id=dashboard_id)
+    datetime_kpis = DateTimeKPI.objects.filter(dashboard_id=dashboard_id)
+    chart_kpis = ChartKPI.objects.filter(dashboard_id=dashboard_id)
 
-    print(list(ChartKPI.objects.filter(dashboard=my_dashboard).values()))
+    # List to store encoded data
+    data = []
 
-    return render(request, 'dashboard_layout.html', {'data': json.dumps(data)})
+    # Encode UUIDs for RegularKPI instances and store in the list
+    for regular_kpi in regular_kpis:
+        encoded_data = regular_kpi.encode_uuid_with_kpi_type()
+        data.append(encoded_data)
+
+    # Encode UUIDs for DateTimeKPI instances and store in the list
+    for datetime_kpi in datetime_kpis:
+        encoded_data = datetime_kpi.encode_uuid_with_kpi_type()
+        data.append(encoded_data)
+
+    # Encode UUIDs for DateTimeKPI instances and store in the list
+    for chart_kpi in chart_kpis:
+        encoded_data = chart_kpi.encode_uuid_with_kpi_type()
+        data.append(encoded_data)
+
+    return render(request, 'dashboard_layout.html', {'data': data})
 
 
 def create_dashboard(request):

@@ -47,17 +47,16 @@
 <script>
 $(document).ready(function() {
     const dataFromServer = {{ data|safe }};
-    const did = dataFromServer['dashboard']?.['id'];
 
-    if (did !== undefined) {
+    if (dataFromServer !== undefined) {
         const promises = [];
 
-        dataFromServer['kpis']?.forEach(obj => {
+        dataFromServer.forEach(encoded_data => {
             const promise = $.ajax({
-                url: `/get_kpi/?did=${did}&kid=${obj?.id}&kt=${obj?.kpi_type}`,
+                url: `/get_kpi/?ku=${encoded_data}`,
                 type: 'GET',
                 dataType: 'html'
-            });promise
+            });
             promises.push(promise);
         });
 
