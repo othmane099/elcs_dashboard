@@ -1,11 +1,10 @@
-import json
 import random
 
 from django.forms import model_to_dict
 from django.shortcuts import render, redirect
 
 from App import constants
-from App.models import Dashboard, BaseKPITemplate, RegularKPI, DateTimeKPI, ChartKPI, BaseKPI
+from App.models import Dashboard, BaseKPITemplate, RegularKPI, DateTimeKPI, ChartKPI, BaseKPI, BaseKPITemplateContainer
 
 
 # Create your views here.
@@ -20,14 +19,19 @@ def get_kpi(request):
     if kpi_type == constants.REGULAR_KPI_TYPE:
         kpi = RegularKPI.objects.get(uuid=uuid_string)
         kpi_val = model_to_dict(kpi)
+        kpi_val['template'] = model_to_dict(kpi.render_template())
+        kpi_val['template']['container'] = model_to_dict(kpi.render_template_container())
     elif kpi_type == constants.DATETIME_KPI_TYPE:
         kpi = DateTimeKPI.objects.get(uuid=uuid_string)
         kpi_val = model_to_dict(kpi)
+        kpi_val['template'] = model_to_dict(kpi.render_template())
+        kpi_val['template']['container'] = model_to_dict(kpi.render_template_container())
     elif kpi_type == constants.CHART_KPI_TYPE:
         kpi = ChartKPI.objects.get(uuid=uuid_string)
         kpi_val = model_to_dict(kpi)
-
-    return render(request, f"{kpi.render_template().file}", {'data': kpi_val})
+        kpi_val['template'] = model_to_dict(kpi.render_template())
+        kpi_val['template']['container'] = model_to_dict(kpi.render_template_container())
+    return render(request, f"{kpi.render_template_container().file}", {'data': kpi_val})
 
     # return JsonResponse(kpi_data)
 
@@ -60,26 +64,38 @@ def dashboard(request, dashboard_id):
 
 def create_dashboard(request):
     Dashboard(name='Dashboard One').save()
+    BaseKPITemplateContainer(
+        col_span_lg=random.randint(1, 3),
+        col_span_md=random.randint(1, 2),
+        row_span_lg=random.randint(1, 3),
+        row_span_md=random.randint(1, 2),
+    ).save()
     return redirect("/create_template")
 
 
 def create_base_kpi_template(request):
+    container = BaseKPITemplateContainer.objects.get(id=1)
     BaseKPITemplate(
         name='Regular KPI Template',
         description='Template for Regular KPI',
-        file='regular_kpi.html'
+        file='regular_kpi.html',
+        container=container
+
     ).save()
 
     BaseKPITemplate(
         name='Datetime KPI Template',
         description='Template for Datetime KPI',
-        file='time_kpi.html'
+        file='time_kpi.html',
+        container=container
+
     ).save()
 
     BaseKPITemplate(
         name='Barchart KPI Template',
         description='Template for Barchart KPI',
-        file='bar_chart_kpi.html'
+        file='bar_chart_kpi.html',
+        container=container
     ).save()
     return redirect("/create_kpi")
 

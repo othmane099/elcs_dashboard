@@ -1,0 +1,18 @@
+<div class="
+    bg-white
+    dark:bg-slate-800
+    p-6 rounded-lg
+     shadow-md
+     lg:col-span-{{ data.template.container.col_span_lg }}
+     md:col-span-{{ data.template.container.col_span_md }}
+     sm:col-span-{{ data.template.container.col_span_sm }}
+     lg:row-span-{{ data.template.container.row_span_lg }}
+     md:row-span-{{ data.template.container.row_span_md }}
+     sm:row-span-{{ data.template.container.row_span_sm }}
+     lg:order-{{ data.template.container.order_lg }}
+     md:order-{{ data.template.container.order_md }}
+     sm:order-{{ data.template.container.order_sm }}
+">
+    {% include data.template.file with data=data %}
+
+</div>

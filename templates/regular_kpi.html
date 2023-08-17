@@ -1,15 +1,13 @@
-<div class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md lg:order-1 md:order-1 sm:order-1">
-    <h2 class="text-lg dark:text-white font-semibold mb-5">{{ data.name }}</h2>
-    <div class="flex justify-between">
-        <div>
-            <p class="dark:text-white text-5xl font-bold">
-                {{ data.current_number }}
-                <span class="text-lg text-blue-500">/</span><span
-                    class="text-blue-500 text-2xl ps-1">{{ data.total_number }}</span>
-            </p>
-        </div>
-        <div>
-            <p class="dark:text-white text-5xl font-bold">{{ data.percentage }}</p>
-        </div>
+<h2 class="text-lg dark:text-white font-semibold mb-5">{{ data.name }}</h2>
+<div class="flex justify-between">
+    <div>
+        <p class="dark:text-white text-5xl font-bold">
+            {{ data.current_number }}
+            <span class="text-lg text-blue-500">/</span><span
+                class="text-blue-500 text-2xl ps-1">{{ data.total_number }}</span>
+        </p>
+    </div>
+    <div>
+        <p class="dark:text-white text-5xl font-bold">{{ data.percentage }}</p>
     </div>
 </div>

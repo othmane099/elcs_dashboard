@@ -9,12 +9,32 @@ from App import constants
 
 class Dashboard(models.Model):
     name = models.CharField(max_length=50)
+    dark_mode = models.BooleanField(default=False)
+
+
+class BaseKPITemplateContainer(models.Model):
+    file = models.CharField(default='kpi_card.html', max_length=50)
+
+    col_span_lg = models.IntegerField(default=1)
+    col_span_md = models.IntegerField(default=1)
+    col_span_sm = models.IntegerField(default=1)
+
+    row_span_lg = models.IntegerField(default=1)
+    row_span_md = models.IntegerField(default=1)
+    row_span_sm = models.IntegerField(default=1)
+
+    order_lg = models.IntegerField(default=1)
+    order_md = models.IntegerField(default=1)
+    order_sm = models.IntegerField(default=1)
 
 
 class BaseKPITemplate(models.Model):
     name = models.CharField(max_length=50)
     description = models.CharField(max_length=120)
     file = models.CharField(max_length=50)
+
+    container = models.ForeignKey(BaseKPITemplateContainer, on_delete=models.CASCADE)
+
 
 
 class BaseKPI(models.Model):
@@ -26,6 +46,9 @@ class BaseKPI(models.Model):
 
     def render_template(self):
         return self.template
+
+    def render_template_container(self):
+        return self.template.container
 
     def encode_uuid_with_kpi_type(self):
         # Combine the UUID and additional data
@@ -73,5 +96,3 @@ class ChartKPI(BaseKPI):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.kpi_type = constants.CHART_KPI_TYPE
-
-
