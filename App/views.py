@@ -4,7 +4,8 @@ from django.forms import model_to_dict
 from django.shortcuts import render, redirect
 
 from App import constants
-from App.models import Dashboard, BaseKPITemplate, RegularKPI, DateTimeKPI, ChartKPI, BaseKPI, BaseKPITemplateContainer
+from App.models import Dashboard, BaseKPITemplate, RegularKPI, DateTimeKPI, ChartKPI, BaseKPI, BaseKPITemplateContainer, \
+    DashboardSection
 
 
 # Create your views here.
@@ -31,44 +32,58 @@ def get_kpi(request):
         kpi_val = model_to_dict(kpi)
         kpi_val['template'] = model_to_dict(kpi.render_template())
         kpi_val['template']['container'] = model_to_dict(kpi.render_template_container())
+
     return render(request, f"{kpi.render_template_container().file}", {'data': kpi_val})
 
     # return JsonResponse(kpi_data)
 
 
 def dashboard(request, dashboard_id):
-    regular_kpis = RegularKPI.objects.filter(dashboard_id=dashboard_id)
-    datetime_kpis = DateTimeKPI.objects.filter(dashboard_id=dashboard_id)
-    chart_kpis = ChartKPI.objects.filter(dashboard_id=dashboard_id)
-
-    # List to store encoded data
     data = []
+    dashb = Dashboard.objects.get(id=dashboard_id)
+    all_data = {'dashboard': model_to_dict(dashb), 'data': data}
+    dashboard_sections = list(DashboardSection.objects.filter(dashboard_id=dashboard_id))
+    for ds in dashboard_sections:
+        section = {'section': model_to_dict(ds), 'kpis': []}
+        regular_kpis = RegularKPI.objects.filter(dashboard_section=ds)
+        datetime_kpis = DateTimeKPI.objects.filter(dashboard_section=ds)
+        chart_kpis = ChartKPI.objects.filter(dashboard_section=ds)
 
-    # Encode UUIDs for RegularKPI instances and store in the list
-    for regular_kpi in regular_kpis:
-        encoded_data = regular_kpi.encode_uuid_with_kpi_type()
-        data.append(encoded_data)
+        for regular_kpi in regular_kpis:
+            encoded_data = regular_kpi.encode_uuid_with_kpi_type()
+            section['kpis'].append(encoded_data)
 
-    # Encode UUIDs for DateTimeKPI instances and store in the list
-    for datetime_kpi in datetime_kpis:
-        encoded_data = datetime_kpi.encode_uuid_with_kpi_type()
-        data.append(encoded_data)
+        # Encode UUIDs for DateTimeKPI instances and store in the list
+        for datetime_kpi in datetime_kpis:
+            encoded_data = datetime_kpi.encode_uuid_with_kpi_type()
+            section['kpis'].append(encoded_data)
 
-    # Encode UUIDs for DateTimeKPI instances and store in the list
-    for chart_kpi in chart_kpis:
-        encoded_data = chart_kpi.encode_uuid_with_kpi_type()
-        data.append(encoded_data)
+        # Encode UUIDs for DateTimeKPI instances and store in the list
+        for chart_kpi in chart_kpis:
+            encoded_data = chart_kpi.encode_uuid_with_kpi_type()
+            section['kpis'].append(encoded_data)
 
-    return render(request, 'dashboard_layout.html', {'data': data})
+        data.append(section)
+
+    return render(request, 'dashboard_layout.html', {'data': all_data})
 
 
 def create_dashboard(request):
     Dashboard(name='Dashboard One').save()
+    dashboar = Dashboard.objects.get(id=1)
     BaseKPITemplateContainer(
-        col_span_lg=random.randint(1, 3),
-        col_span_md=random.randint(1, 2),
-        row_span_lg=random.randint(1, 3),
-        row_span_md=random.randint(1, 2),
+        #     col_span_lg=random.randint(1, 3),
+        #     col_span_md=random.randint(1, 2),
+        #     row_span_lg=random.randint(1, 3),
+        #     row_span_md=random.randint(1, 2),
+    ).save()
+    DashboardSection(dashboard=dashboar).save()
+    DashboardSection(
+        dashboard=dashboar,
+        grid_cols_lg=2,
+        grid_cols_md=1,
+        grid_cols_sm=1,
+        mt=5
     ).save()
     return redirect("/create_template")
 
@@ -100,8 +115,11 @@ def create_base_kpi_template(request):
     return redirect("/create_kpi")
 
 
+#
+
 def create_kpi(request):
-    dash = Dashboard.objects.get(id=1)
+    dash = DashboardSection.objects.get(id=1)
+    dash2 = DashboardSection.objects.get(id=2)
     regualr_kpi_template = BaseKPITemplate.objects.get(id=1)
     datetime_kpi_template = BaseKPITemplate.objects.get(id=2)
     bar_chart_kpi_template = BaseKPITemplate.objects.get(id=3)
@@ -109,7 +127,7 @@ def create_kpi(request):
     for i in range(1, 5):
         RegularKPI(
             name=f'Regular KPI {i:02d}',
-            dashboard=dash,
+            dashboard_section=dash,
             template=regualr_kpi_template,
             current_number=random.randint(10, 100),
             total_number=random.randint(100, 200),
@@ -118,7 +136,7 @@ def create_kpi(request):
 
         DateTimeKPI(
             name=f"DateTime KPI {i:02d}",
-            dashboard=dash,
+            dashboard_section=dash,
             template=datetime_kpi_template,
             days=random.randint(0, 360),
             hours=random.randint(0, 59),
@@ -132,7 +150,7 @@ def create_kpi(request):
 
         ChartKPI(
             name=f"ChartKPI {i:02d}",
-            dashboard=dash,
+            dashboard_section=dash2,
             template=bar_chart_kpi_template,
             data=data
         ).save()

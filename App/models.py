@@ -12,6 +12,21 @@ class Dashboard(models.Model):
     dark_mode = models.BooleanField(default=False)
 
 
+class DashboardSection(models.Model):
+    file = models.CharField(default='dashboard_section.html', max_length=50)
+    dashboard = models.ForeignKey(Dashboard, on_delete=models.CASCADE)
+
+    grid_cols_sm = models.IntegerField(default=1)
+    grid_cols_md = models.IntegerField(default=2)
+    grid_cols_lg = models.IntegerField(default=3)
+    mt = models.IntegerField(default=1)
+    mb = models.IntegerField(default=1)
+    ml = models.IntegerField(default=1)
+    mr = models.IntegerField(default=1)
+
+    gap = models.IntegerField(default=4)
+
+
 class BaseKPITemplateContainer(models.Model):
     file = models.CharField(default='kpi_card.html', max_length=50)
 
@@ -36,11 +51,10 @@ class BaseKPITemplate(models.Model):
     container = models.ForeignKey(BaseKPITemplateContainer, on_delete=models.CASCADE)
 
 
-
 class BaseKPI(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     name = models.CharField(max_length=50)
-    dashboard = models.ForeignKey(Dashboard, on_delete=models.CASCADE)
+    dashboard_section = models.ForeignKey(DashboardSection, on_delete=models.CASCADE)
     template = models.ForeignKey(BaseKPITemplate, on_delete=models.CASCADE)
     kpi_type = models.CharField(max_length=50, editable=False)
 

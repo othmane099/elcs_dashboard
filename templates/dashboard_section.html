@@ -1,0 +1,53 @@
+
+<div class="
+        grid
+        sm:grid-cols-{{ data.section.grid_cols_sm }}
+        md:grid-cols-{{ data.section.grid_cols_md }}
+        lg:grid-cols-{{ data.section.grid_cols_lg }}
+        mt-{{ data.section.mt }}
+        mb-{{ data.section.mb }}
+        ml-{{ data.section.ml }}
+        mr-{{ data.section.mr }}
+        gap-{{ data.section.gap }}
+"
+     id="kpi-data{{ data.section.id }}">
+
+
+</div>
+
+
+
+
+<script>
+$(document).ready(function() {
+    const dataFromServer = {{ data.kpis|safe }};
+    const section_id = {{ data.section.id|safe }};
+
+    if (dataFromServer !== undefined) {
+        const promises = [];
+
+        dataFromServer.forEach(encoded_data => {
+            const promise = $.ajax({
+                url: `/get_kpi/?ku=${encoded_data}`,
+                type: 'GET',
+                dataType: 'html'
+            });
+            promises.push(promise);
+        });
+
+        // Use jQuery's when() to wait for all promises to resolve
+        $.when(...promises)
+            .then(function(...responses) {
+                // Update the content with the received data
+                responses.forEach(response => {
+                    $('#kpi-data'+section_id).append(response?.[0]);  // Append each response to the container
+                });
+            })
+            .fail(function() {
+                $('#kpi-data').html('An error occurred while fetching data.');
+            });
+    } else {
+        console.error("Dashboard ID is missing or undefined.");
+    }
+});
+</script>
