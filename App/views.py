@@ -35,8 +35,6 @@ def get_kpi(request):
 
     return render(request, f"{kpi.render_template_container().file}", {'data': kpi_val})
 
-    # return JsonResponse(kpi_data)
-
 
 def dashboard(request, dashboard_id):
     data = []
@@ -71,12 +69,7 @@ def dashboard(request, dashboard_id):
 def create_dashboard(request):
     Dashboard(name='Dashboard One').save()
     dashboar = Dashboard.objects.get(id=1)
-    BaseKPITemplateContainer(
-        #     col_span_lg=random.randint(1, 3),
-        #     col_span_md=random.randint(1, 2),
-        #     row_span_lg=random.randint(1, 3),
-        #     row_span_md=random.randint(1, 2),
-    ).save()
+    BaseKPITemplateContainer().save()
     DashboardSection(dashboard=dashboar).save()
     DashboardSection(
         dashboard=dashboar,
