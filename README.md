@@ -25,3 +25,7 @@ All KPI types share common attributes like ```name```, ```dashboard```, and ```t
 ### Summary
 1. When you send **GET** request to the endpoint ```/dashboard/1```, `dashboard_layout.html` renders with a list of all KPIs with ``dashboard_id`` = 1.
 2. After `dashboard_layout.html` loaded on browser, using rendered data `GET` request will send from Ajax with the following params `did` (dashboard_id), `kid` (KPI's id) and `kt` (kpi_type) to endpoint get_kpi to get html template of each KPI type and place it on layout.
+
+## UPATE
+- J'ai ajouter pour chaque **Dashboad** plusieurs sections
+- J'ai ajouter **KPITemplateContainer**, c'est le conteneur de **KPITemplate** 
